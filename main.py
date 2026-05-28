@@ -1,14 +1,14 @@
 class Conta:
     def __init__(self, saldo_inicial=1500):
         self.saldo = saldo_inicial
-        self.extratos = []
+        self.historico_transacoes = []
         self.depositos = []
-        self.saques = []
-        self.saque_diario = 3
-        self.saque_dia = 0
+        self.lista_valores_saques = []
+        self.limites_saques_diarios = 3
+        self.quantidade_saques_realizados = 0
         self.limite_maximo = 500
-        self.limite_maximo_saque = 1500
-        self.total_saque = 0
+        self.limite_maximo_valor = 1500
+        self.valor_total_sacado_no_dia = 0
 
 
 # Depósito
@@ -16,12 +16,14 @@ class Conta:
 # A versão 1 do projeto trabalha apenas com 1 usuário, portanto não é necessário identificar número de agência ou conta.
 # Todos os depósitos devem ser armazenados em uma variável e exibidos na operação de extrato.
 
+
     def deposito(self, valor):
 
         deposito_negativo = valor <= 0
 
         if deposito_negativo:
-            print("O valor do depósito não pode ser negativo!")
+            print(
+                "\n\033[31mO valor do depósito não pode ser negativo!\033[0m\n")
 
         else:
 
@@ -29,7 +31,7 @@ class Conta:
             self.saldo += valor
 
             mensagem_extrato = f"Depósito R$ {valor:.2f}"
-            self.extratos.append(mensagem_extrato)
+            self.historico_transacoes.append(mensagem_extrato)
 
             mensagem_deposito = f"Depósito de {valor:.2f} realizado com sucesso!"
 
@@ -46,30 +48,29 @@ class Conta:
 # Caso o usuário não tenha saldo, o sistema deve exibir uma mensagem informando que não será possível sacar o dinheiro por falta de saldo.
 # Todos os saques devem ser armazenados em uma variável e exibidos na operação de extrato
 
-
     def saque(self, valor):
 
         if valor > self.saldo:
             print("\n\033[31mSaldo insuficiente\033[0m\n")
 
-        elif self.saque_dia == self.saque_diario:
+        elif self.quantidade_saques_realizados == self.limites_saques_diarios:
             print("\nSaque diário Excedido\n")
 
         elif valor > self.limite_maximo:
             print("\nLimite máximo por operação: R$ 500,00\n")
 
-        elif self.total_saque + valor > self.limite_maximo_saque:
+        elif self.valor_total_sacado_no_dia + valor > self.limite_maximo_valor:
             print("\nLimite total de saque atingido: R$ 1500,00\n")
 
         else:
 
-            self.total_saque += valor
-            self.saque_dia += 1
+            self.valor_total_sacado_no_dia += valor
+            self.quantidade_saques_realizados += 1
             self.saldo -= valor
-            self.saques.append(valor)
+            self.lista_valores_saques.append(valor)
 
             mensagem_extrato = f"Saque R$ {valor:.2f}"
-            self.extratos.append(mensagem_extrato)
+            self.historico_transacoes.append(mensagem_extrato)
 
             mensagem_saque = f"Saque de {valor:.2f} realizado com sucesso!"
 
@@ -86,7 +87,7 @@ class Conta:
     # Os valores devem ser exibidos utilizando o formato R$ xxx.xx, exemplo:
     # 1500.45 = R$ 1500.45
 
-    def extrato(self):
+    def exibir_extrato(self):
 
         mensagem_extrato = "EXTRATO"
 
@@ -96,7 +97,7 @@ class Conta:
         print(mensagem_extrato.center(largura))
         print("-" * largura)
 
-        for i in self.extratos:
+        for i in self.historico_transacoes:
             tipo = i.split()
 
             operacao = tipo[0].ljust(10)
@@ -129,12 +130,12 @@ class Conta:
             opcao = input("Opção: ")
             print()
 
-            opcao_1 = opcao == "1"
-            opcao_2 = opcao == "2"
-            opcao_3 = opcao == "3"
-            opcao_4 = opcao == "4"
+            escolheu_deposito = opcao == "1"
+            escolheu_saque = opcao == "2"
+            exibir_historico = opcao == "3"
+            deseja_sair = opcao == "4"
 
-            if opcao_1:
+            if escolheu_deposito:
 
                 try:
                     valor = float(input("Digite o valor de depósito: R$ "))
@@ -142,10 +143,10 @@ class Conta:
                 except ValueError:
                     print("\n\33[31mEntrada Inválida!\33[0m\n")
 
-            elif opcao_2:
-                mensagem_1 = "Limite máximo por operação: R$ 500,00"
-                mensagem_2 = "Limite total de saque: R$ 1.500,00"
-                mensagem_3 = "Limite de saques diários: 3"
+            elif escolheu_saque:
+                mensagem_1 = f"Limite máximo por operação: R$ {self.limite_maximo:.2f}"
+                mensagem_2 = f"Limite total de saque: R$ {self.limite_maximo_valor:.2f}"
+                mensagem_3 = f"Limite de saques diários: {self.limites_saques_diarios}"
 
                 largura = max(len(mensagem_1), len(
                     mensagem_2), len(mensagem_3)) + 10
@@ -161,10 +162,10 @@ class Conta:
                 except ValueError:
                     print("\n\33[31mEntrada Inválida!\33[0m\n")
 
-            elif opcao_3:
-                self.extrato()
+            elif exibir_historico:
+                self.exibir_extrato()
 
-            elif opcao_4:
+            elif deseja_sair:
                 break
 
             else:
